@@ -1,0 +1,120 @@
+services:
+  kafka-1:
+    image: apache/kafka:4.0.0
+    hostname: kafka-1
+    container_name: kafka-1
+
+    ports:
+      - "9092:9092" # External listener for clients
+      - "9093:9093" # Internal listener for FRaft controller comminication
+
+    networks: 
+      - kafka-net 
+
+    volumes:
+      - ./kafka1-storage:/tmp/kafka-logs
+
+
+    environment:
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      CLUSTER_ID: 'z8_0NL9aSF27bLRMko4qrQ'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-1:9093'
+      KAFKA_LISTENERS: 'BROKER://kafka-1:29092,CLIENT://0.0.0.0:9092,CONTROLLER://kafka-1:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'BROKER://kafka-1:29092,CLIENT://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'BROKER:PLAINTEXT,CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'BROKER'
+      KAFLA_LOG_DIRS: '/tmp/kafka-logs'
+    
+  kafka-2:
+    image: apache/kafka:4.0.0
+    hostname: kafka-2
+    container_name: kafka-2
+
+    ports:
+      - "9094:9092" # External listener for clients
+
+    networks: 
+      - kafka-net  
+
+    volumes:
+      - ./kafka2-storage:/tmp/kafka-logs
+
+
+    environment:
+      KAFKA_PROCESS_ROLES: 'broker'
+      KAFKA_NODE_ID: 2
+      CLUSTER_ID: 'z8_0NL9aSF27bLRMko4qrQ'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-1:9093'
+      KAFKA_LISTENERS: 'BROKER://kafka-2:29092,CLIENT://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'BROKER://kafka-2:29092,CLIENT://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'BROKER:PLAINTEXT,CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'BROKER'
+      KAFLA_LOG_DIRS: '/tmp/kafka-logs'
+
+  
+
+  kafka-3:
+    image: apache/kafka:4.0.0
+    hostname: kafka-3
+    container_name: kafka-3
+
+    ports:
+      - "9095:9092" # External listener for clients
+    
+    networks: 
+      - kafka-net   
+    
+    volumes:
+      - ./kafka3-storage:/tmp/kafka-logs
+
+    environment:
+      KAFKA_PROCESS_ROLES: 'broker'
+      KAFKA_NODE_ID: 3
+      CLUSTER_ID: 'z8_0NL9aSF27bLRMko4qrQ'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-1:9093'
+      KAFKA_LISTENERS: 'BROKER://kafka-3:29092,CLIENT://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'BROKER://kafka-3:29092,CLIENT://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'BROKER:PLAINTEXT,CLIENT:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'BROKER'
+      KAFLA_LOG_DIRS: '/tmp/kafka-logs'
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: pro-kafka-ui
+    networks:
+      - kafka-net
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 'multi-node-cluster'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka-1:29092,kafka-2:29092,kafka-3:29092'  
+
+  redpanda-console:
+    image: redpandadata/console:latest
+    container_name: redpanda-console
+    networks:
+      - kafka-net
+    ports:
+      - "7070:8080"
+    depends_on:    
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    environment:
+      KAFKA_BROKERS: 'kafka-1:29092,kafka-2:29092,kafka-3:29092' 
+
+networks:
+  kafka-net:
+    driver: bridge
+
+volumes:
+  kafka-data:
+    driver: local
