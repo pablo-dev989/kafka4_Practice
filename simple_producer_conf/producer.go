@@ -19,7 +19,7 @@ func main() {
 
 	topic := "user-profiles"
 
-	message := "Hello from Go 2!"
+	message := "Hello from Go 3!"
 
 	err = p.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
@@ -28,7 +28,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	p.Flush(10)
 
 	fmt.Println("Message produced successfully!")
 }
