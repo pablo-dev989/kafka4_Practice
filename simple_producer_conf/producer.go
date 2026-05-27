@@ -9,7 +9,11 @@ import (
 func main() {
 
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": "localhost:9092",
+		"bootstrap.servers":                     "localhost:9092",
+		"enable.idempotence":                    true,
+		"acks":                                  "all",
+		"retries":                               10,
+		"max.in.flight.requests.per.connection": 5,
 	})
 	if err != nil {
 		panic(err)
