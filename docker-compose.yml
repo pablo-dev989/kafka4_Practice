@@ -118,6 +118,8 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: 'multi-node-cluster'
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka-1:29092,kafka-2:29092,kafka-3:29092'  
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: 'http://schema-registry:8081'
+      DYNAMIC_CONFIG_ENABLED: 'true'
 
   redpanda-console:
     image: redpandadata/console:latest
@@ -131,5 +133,23 @@ services:
       - kafka-2
       - kafka-3
     environment:
-      KAFKA_BROKERS: 'kafka-1:29092,kafka-2:29092,kafka-3:29092' 
+      KAFKA_BROKERS: 'kafka-1:29092,kafka-2:29092,kafka-3:29092'
+      KAFKA_SCHEMAREGISTRY_URL: 'http://schema-registry:8081' 
 
+  shema-registry:
+    image: confluentinc/cp-schema-registry:latest
+    container_name: schema-registry
+    hostname: schema-registry
+    networks:
+      - kafka-net
+    volumes:
+      - ./kafka-storage:/tmp/kafka-logs  
+    ports:
+      - "8081:8081"
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka-1:29092,kafka-2:29092,kafka-3:29092'
