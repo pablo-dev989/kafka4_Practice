@@ -68,7 +68,7 @@ func main() {
 				Key:   "error-reason",
 				Value: []byte(processingError.Error()),
 			})
-			fmt.Println(msg.Headers)
+			// fmt.Println(msg.Headers)
 			msg.Topic = dlqTopic // Change the topic to the DLQ Topic
 
 			// Produce the fail messgae to the DLQ
